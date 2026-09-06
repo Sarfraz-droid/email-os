@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
   "installCommand": "bun install",
-  "buildCommand": "bun run --filter frontend build",
-  "outputDirectory": "packages/frontend/dist",
+  "buildCommand": "bun run --filter frontend build && rm -rf dist && cp -R packages/frontend/dist dist",
+  "outputDirectory": "dist",
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
