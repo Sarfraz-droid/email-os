@@ -1,7 +1,13 @@
 import type {
   ChatEvent,
   ConversationSummary,
+  DashboardAssistantReply,
+  DashboardSpec,
+  DashboardSummary,
+  DashboardView,
+  GridItem,
   MeResponse,
+  ThreadDetail,
   UiChatMessage,
 } from "@email-os/shared";
 
@@ -133,4 +139,156 @@ function parseSseEvent(raw: string): ChatEvent | undefined {
   } catch {
     return undefined;
   }
+}
+
+// ── Generative dashboards ──────────────────────────────────────────────────
+
+export class ApiError extends Error {
+  status: number;
+  /** True for transport failures / 5xx — the caller may retry. */
+  retryable: boolean;
+  constructor(message: string, status: number, retryable: boolean) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.retryable = retryable;
+  }
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * JSON fetch with bounded retry on the failures the user was hitting: dropped
+ * connections ("Failed to fetch") and 502/503/504. 4xx are surfaced immediately.
+ */
+async function apiFetch<T>(
+  path: string,
+  init: RequestInit = {},
+  opts: { retries?: number; retryOn5xx?: boolean } = {}
+): Promise<T> {
+  const retries = opts.retries ?? 3;
+  const retryOn5xx = opts.retryOn5xx ?? true;
+  let lastErr: unknown;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    if (attempt > 0) await sleep(Math.min(500 * 2 ** (attempt - 1), 4000));
+    try {
+      const res = await fetch(`${BACKEND_URL}${path}`, { ...withCreds, ...init });
+      if (res.status === 401) {
+        throw new ApiError("Your session expired — sign in again.", 401, false);
+      }
+      const body = await res.json().catch(() => ({}) as Record<string, unknown>);
+      if (res.ok) return body as T;
+
+      const msg = (body as { error?: string }).error ?? `Request failed (${res.status})`;
+      const retryable = retryOn5xx && res.status >= 500;
+      if (!retryable) throw new ApiError(msg, res.status, false);
+      lastErr = new ApiError(msg, res.status, true);
+    } catch (err) {
+      if (err instanceof ApiError && !err.retryable) throw err;
+      // TypeError from fetch = network/transport failure.
+      lastErr =
+        err instanceof ApiError
+          ? err
+          : new ApiError(
+              err instanceof Error ? err.message : "Network error",
+              0,
+              true
+            );
+    }
+  }
+  throw lastErr instanceof Error
+    ? lastErr
+    : new ApiError("Network error", 0, true);
+}
+
+export async function listDashboards(): Promise<DashboardSummary[]> {
+  const body = await apiFetch<{ dashboards: DashboardSummary[] }>("/api/dashboards");
+  return body.dashboards;
+}
+
+export async function getDashboard(id: string): Promise<DashboardView> {
+  const body = await apiFetch<{ dashboard: DashboardView }>(`/api/dashboards/${id}`);
+  return body.dashboard;
+}
+
+/** Reads the original Gmail conversation used as evidence for a dashboard row. */
+export async function getDashboardSourceThread(
+  dashboardId: string,
+  threadId: string
+): Promise<ThreadDetail> {
+  const body = await apiFetch<{ thread: ThreadDetail }>(
+    `/api/dashboards/${encodeURIComponent(dashboardId)}/sources/${encodeURIComponent(threadId)}`
+  );
+  return body.thread;
+}
+
+/** Generates a spec from a plain-language prompt and stores the dashboard. */
+export async function createDashboard(prompt: string): Promise<DashboardView> {
+  // Spec generation is a slow LLM call; don't hammer it with retries.
+  const body = await apiFetch<{ dashboard: DashboardView }>(
+    "/api/dashboards",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt }),
+    },
+    { retries: 1, retryOn5xx: false }
+  );
+  return body.dashboard;
+}
+
+/** Kicks off a background refresh; returns the dashboard with `refreshState`. */
+export async function startDashboardRefresh(id: string): Promise<DashboardView> {
+  const body = await apiFetch<{ dashboard: DashboardView }>(
+    `/api/dashboards/${id}/refresh`,
+    { method: "POST" }
+  );
+  return body.dashboard;
+}
+
+export async function updateDashboardSpec(
+  id: string,
+  spec: DashboardSpec
+): Promise<DashboardView> {
+  const body = await apiFetch<{ dashboard: DashboardView }>(`/api/dashboards/${id}/spec`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ spec }),
+  });
+  return body.dashboard;
+}
+
+export async function updateDashboardLayout(
+  id: string,
+  layout: GridItem[]
+): Promise<DashboardView> {
+  const body = await apiFetch<{ dashboard: DashboardView }>(`/api/dashboards/${id}/layout`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ layout }),
+  });
+  return body.dashboard;
+}
+
+export async function askDashboardAssistant(
+  id: string,
+  message: string
+): Promise<DashboardAssistantReply> {
+  return apiFetch<DashboardAssistantReply>(
+    `/api/dashboards/${id}/assistant`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message }),
+    },
+    { retries: 1, retryOn5xx: false }
+  );
+}
+
+export async function deleteDashboard(id: string): Promise<void> {
+  await apiFetch(`/api/dashboards/${id}`, { method: "DELETE" }).catch((err) => {
+    if (err instanceof ApiError && err.status === 404) return;
+    throw err;
+  });
 }

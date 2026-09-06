@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { ChatWindow } from "@/components/chat/ChatWindow";
+import { DashboardView } from "@/components/dashboard/DashboardView";
 import { LoginScreen } from "@/components/auth/LoginScreen";
 import { useAuth } from "@/lib/auth";
 
 function App() {
   const { user, loading } = useAuth();
+  const [view, setView] = useState<"chat" | "dashboards">("chat");
 
   if (loading) {
     return (
@@ -13,7 +16,13 @@ function App() {
     );
   }
 
-  return user ? <ChatWindow /> : <LoginScreen />;
+  if (!user) return <LoginScreen />;
+
+  return view === "dashboards" ? (
+    <DashboardView onClose={() => setView("chat")} />
+  ) : (
+    <ChatWindow onOpenDashboards={() => setView("dashboards")} />
+  );
 }
 
 export default App;

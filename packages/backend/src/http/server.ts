@@ -4,6 +4,7 @@ import { oauthRoutes } from "./routes/oauth.js";
 import { authRoutes } from "./routes/auth.js";
 import { chatRoutes } from "./routes/chat.js";
 import { conversationRoutes } from "./routes/conversations.js";
+import { dashboardRoutes } from "./routes/dashboards.js";
 import { docsRoutes } from "./routes/docs.js";
 import { attachmentRoutes } from "./routes/attachments.js";
 import { optionalAuth, type AuthVars } from "./middleware/require-auth.js";
@@ -30,6 +31,7 @@ export function createHttpApp() {
   app.route("/", authRoutes);
   app.route("/", chatRoutes);
   app.route("/", conversationRoutes);
+  app.route("/", dashboardRoutes);
   app.route("/", attachmentRoutes);
   app.route("/", docsRoutes);
 
@@ -40,7 +42,10 @@ export async function startHttpServer(): Promise<void> {
   const config = loadConfig();
   await ensureSchema();
   const app = createHttpApp();
-  Bun.serve({ port: config.server.port, fetch: app.fetch });
+  // Bun closes a request after `idleTimeout` seconds of no socket activity
+  // (default 10s), which killed slow LLM-backed requests. Long jobs now run in
+  // the background and the UI polls, but keep a generous ceiling for the rest.
+  Bun.serve({ port: config.server.port, fetch: app.fetch, idleTimeout: 240 });
   console.log(`Gmail OS backend listening on http://localhost:${config.server.port}`);
   console.log(`Sign in: http://localhost:${config.server.port}/auth/google/start`);
   console.log(`API reference (Scalar): http://localhost:${config.server.port}/docs`);

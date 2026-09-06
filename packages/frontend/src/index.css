@@ -142,6 +142,36 @@ body {
   }
 }
 
+/* Dashboard tiles use one quiet elevation system so generated layouts read as
+   a single canvas instead of a collection of unrelated cards. */
+.dashboard-panel,
+.dashboard-kpi {
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+.dashboard-kpi {
+  position: relative;
+  background: color-mix(in oklch, var(--card) 94%, var(--primary));
+}
+.dashboard-kpi::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 1.25rem;
+  width: 2.25rem;
+  height: 2px;
+  border-radius: 0 0 999px 999px;
+  background: var(--primary);
+}
+.dashboard-bar {
+  background: color-mix(in oklch, var(--chart-1) 78%, white);
+}
+.dashboard-column { background: var(--chart-1); }
+.dashboard-column-1 { background: var(--chart-2); }
+.dashboard-column-2 { background: var(--chart-3); }
+.dashboard-column-3 { background: var(--chart-4); }
+.dashboard-column-4 { background: var(--chart-5); }
+
 /* The mark: a small precise conic disc with a fine rim. Static unless
    motion is welcome. */
 .mark {
@@ -207,4 +237,61 @@ body {
     border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover { background: oklch(1 0 0 / 0.18); background-clip: content-box; }
+}
+
+/* ── react-grid-layout (self-hosted minimal styles, themed) ──────────── */
+.react-grid-layout {
+  position: relative;
+}
+.react-grid-item {
+  transition: transform 200ms ease;
+}
+.react-grid-item img {
+  pointer-events: none;
+  user-select: none;
+}
+.react-grid-item.cssTransforms {
+  transition-property: transform;
+}
+.react-grid-item.resizing {
+  z-index: 1;
+  will-change: width, height;
+}
+.react-grid-item.react-draggable-dragging {
+  transition: none;
+  z-index: 3;
+  will-change: transform;
+}
+.react-grid-item.react-grid-placeholder {
+  background: var(--primary);
+  opacity: 0.18;
+  border-radius: var(--radius);
+  transition-duration: 100ms;
+  z-index: 2;
+  user-select: none;
+}
+.react-grid-item > .react-resizable-handle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  bottom: 0;
+  right: 0;
+  cursor: se-resize;
+}
+.react-grid-layout:not(.layout-editing) .react-resizable-handle {
+  display: none;
+}
+.react-grid-item > .react-resizable-handle::after {
+  content: "";
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 6px;
+  height: 6px;
+  border-right: 2px solid var(--muted-foreground);
+  border-bottom: 2px solid var(--muted-foreground);
+  opacity: 0.6;
+}
+.react-grid-item:not(.react-draggable-dragging) {
+  /* keep tiles crisp while idle */
 }

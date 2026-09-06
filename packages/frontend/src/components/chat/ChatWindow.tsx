@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Menu } from "lucide-react";
+import { LayoutDashboard, Menu } from "lucide-react";
 import type { ConversationSummary } from "@email-os/shared";
 import { useChatStream } from "@/hooks/useChatStream";
 import { deleteConversation, listConversations } from "@/lib/api";
@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 
 const SIDEBAR_KEY = "gmailos:sidebar-collapsed";
 
-export function ChatWindow() {
+export function ChatWindow({ onOpenDashboards }: { onOpenDashboards?: () => void }) {
   const { gmailConnected, login } = useAuth();
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
 
@@ -135,6 +135,16 @@ export function ChatWindow() {
           </button>
 
           <div className="ml-auto flex items-center gap-3">
+            {onOpenDashboards && (
+              <button
+                type="button"
+                onClick={onOpenDashboards}
+                className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
+              >
+                <LayoutDashboard className="size-3.5" />
+                <span className="hidden sm:inline">Dashboards</span>
+              </button>
+            )}
             <span className={`flex items-center gap-1.5 text-xs ${status.tone}`}>
               <span className={`size-1.5 rounded-full ${status.dot}`} />
               {status.text}
