@@ -3,7 +3,7 @@
   "framework": "vite",
   "installCommand": "bun install",
   "buildCommand": "bun run --filter frontend build",
-  "outputDirectory": "packages/frontend/dist",
+  "outputDirectory": "dist",
   "rewrites": [
     { "source": "/api/:path*", "destination": "https://email-os-backend.fly.dev/api/:path*" },
     { "source": "/auth/:path*", "destination": "https://email-os-backend.fly.dev/auth/:path*" },
