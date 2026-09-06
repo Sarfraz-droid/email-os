@@ -51,7 +51,7 @@ export function MailModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm sm:items-center"
+      className="fixed inset-0 z-50 flex items-stretch justify-center overflow-y-auto bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -60,9 +60,9 @@ export function MailModal({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="modal-in my-auto flex max-h-[86vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-strong bg-popover shadow-pop-x"
+        className="modal-in flex h-svh w-full flex-col overflow-hidden border-strong bg-popover shadow-pop-x sm:my-auto sm:h-auto sm:max-h-[86vh] sm:max-w-2xl sm:rounded-2xl sm:border"
       >
-        <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+        <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:pt-3">
           <div className="flex min-w-0 items-center gap-2.5">
             <span className="mark size-4 shrink-0" aria-hidden />
             <p className="truncate text-sm font-semibold tracking-tight">{title}</p>
@@ -72,13 +72,13 @@ export function MailModal({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
+            className="grid size-9 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
           >
             <X className="size-4" />
           </button>
         </div>
 
-        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
+        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:pb-4">
           {messages.map((m, i) => (
             <MessagePanel
               key={m.id}

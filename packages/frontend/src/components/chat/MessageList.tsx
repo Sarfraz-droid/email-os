@@ -12,8 +12,8 @@ export function MessageList({ messages }: { messages: ChatMessage[] }) {
   }, [messages]);
 
   return (
-    <ScrollArea className="min-h-0 flex-1 px-4">
-      <div className="mx-auto flex max-w-xl flex-col gap-8 py-8">
+    <ScrollArea className="min-h-0 flex-1 px-3 sm:px-4">
+      <div className="mx-auto flex max-w-xl flex-col gap-6 py-6 sm:gap-8 sm:py-8">
         {messages.map((message) =>
           message.role === "user" ? (
             <div key={message.id} id={`msg-${message.id}`} className="msg-in flex scroll-mt-20 justify-end">

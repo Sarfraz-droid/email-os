@@ -31,16 +31,24 @@ export function Hero({
   disabled?: boolean;
   onSend: (text: string) => void;
 }) {
-  return (
-    <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-4 py-10">
-      <div className="msg-in flex w-full max-w-2xl flex-col items-center gap-7 text-center">
-        <span className="mark mark-live size-11" aria-hidden />
+  const pointerFine =
+    typeof window !== "undefined" && window.matchMedia?.("(pointer: fine)").matches;
 
-        <h2 className="text-[2rem] leading-[1.1] font-semibold tracking-[-0.025em] text-balance sm:text-[2.4rem]">
+  return (
+    <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-4 py-8">
+      <div className="msg-in flex w-full max-w-2xl flex-col items-center gap-6 text-center sm:gap-7">
+        <span className="mark mark-live size-10 sm:size-11" aria-hidden />
+
+        <h2 className="text-[1.75rem] leading-[1.12] font-semibold tracking-[-0.025em] text-balance sm:text-[2.4rem]">
           What&rsquo;s in your inbox?
         </h2>
 
-        <MessageInput disabled={disabled} onSend={onSend} variant="hero" autoFocus />
+        <MessageInput
+          disabled={disabled}
+          onSend={onSend}
+          variant="hero"
+          autoFocus={pointerFine}
+        />
 
         <div className="flex flex-wrap justify-center gap-2">
           {SUGGESTIONS.map(({ icon: Icon, label, prompt }) => (
@@ -48,9 +56,9 @@ export function Hero({
               key={label}
               type="button"
               onClick={() => onSend(prompt)}
-              className="group flex items-center gap-1.5 rounded-full border border-strong bg-card/70 px-3 py-1.5 text-[0.8rem] text-muted-foreground shadow-sm-x transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:text-foreground"
+              className="group flex items-center gap-1.5 rounded-full border border-strong bg-card/70 px-3.5 py-2 text-[0.8rem] text-muted-foreground shadow-sm-x transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:text-foreground active:scale-[0.98]"
             >
-              <Icon className="size-3.5 text-muted-foreground/60 transition-colors group-hover:text-primary" />
+              <Icon className="size-3.5 shrink-0 text-muted-foreground/60 transition-colors group-hover:text-primary" />
               {label}
             </button>
           ))}
