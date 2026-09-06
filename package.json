@@ -1,0 +1,13 @@
+{
+  "name": "email-os",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:backend": "bun run --filter backend dev",
+    "dev:frontend": "bun run --filter frontend dev",
+    "typecheck": "bun run --filter '*' typecheck",
+    "build": "bun run --filter '*' build"
+  }
+}

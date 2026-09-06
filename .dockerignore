@@ -1,0 +1,14 @@
+**/node_modules
+**/dist
+**/build
+.git
+.gitignore
+.env
+**/.env
+*.log
+.DS_Store
+.qodo
+packages/backend/data
+packages/frontend/src
+packages/frontend/public
+packages/frontend/index.html

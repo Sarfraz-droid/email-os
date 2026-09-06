@@ -1,0 +1,30 @@
+{
+  "name": "backend",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run src/index.ts serve",
+    "mcp": "bun run src/index.ts mcp",
+    "db:migrate": "bun run src/index.ts migrate",
+    "build": "bun build src/index.ts --outdir dist --target bun",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@email-os/shared": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.9.0",
+    "@scalar/hono-api-reference": "^0.12.0",
+    "dotenv": "^16.4.7",
+    "google-auth-library": "^9.15.1",
+    "googleapis": "^144.0.0",
+    "hono": "^4.6.14",
+    "openai": "^4.77.0",
+    "postgres": "^3.4.9",
+    "zod": "^3.24.1",
+    "zod-to-json-schema": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.1",
+    "typescript": "^5.7.2"
+  }
+}
